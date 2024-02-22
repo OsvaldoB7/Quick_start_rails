@@ -1,0 +1,44 @@
+version: "3"
+services:
+  app:
+    container_name: ${APP_NAME}_app
+    restart: on-failure
+    build: ./docker-compose
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app
+      - ./docker-compose/bundle_cache:/usr/local/bundle
+      - ./docker-compose/database.yml:/app/config/database.yml
+      - ./docker-compose/.gitignore:/app/.gitignore
+      - ./docker-compose/.ruby-version:/app/.ruby-version
+      - ./docker-compose/Gemfile:/app/Gemfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres@postgres/${APP_NAME}_development
+      TEST_DATABASE_URL: postgresql://postgres@postgres/${APP_NAME}_test
+      CLIENT_ID: 
+      CLIENT_SECRET: 
+      DEFAULT_DOMAIN: https://localhost:3000
+      URL_REDIRECT_PRODUCTION: 
+      DB_HOST: postgres
+      DB_DATABASE: 
+      DB_USER: postgres
+      DB_PASSWORD: 8c8588d438d882a41e46f8c0cbf57a62
+
+  postgres:
+    container_name: ${APP_NAME}_db
+    image: postgres:13-alpine
+    command: ["postgres", "-c", "fsync=false", "-c", "full_page_writes=off"]
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./docker-compose/postgres:/var/lib/postgresql/data
+      - ./docker-compose/db_restore:/home/db_restore
+    ports:
+      - "5433:5432"
+volumes:
+  bundle_cache:
